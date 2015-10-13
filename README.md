@@ -1,2 +1,2 @@
 # PdoDb
-Simple PDO class crud operations in mysql
+Simple PDO class for crud operations in mysql

@@ -5,13 +5,15 @@
 class DbPDO
 {
 	protected $_pdo;
+	protected $_query;
+	protected $_where = [];
 	public function __construct($dbname, $username, $password, $driver='mysql', $host='localhost')
 	{
 		try {
 			$this->_pdo = new PDO("$driver:host=$host;dbname=$dbname",$username,$password);	
 			$this->_pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		} catch (PDOException $e) {
-			echo $e->getMessage();	
+			return $e->getMessage();	
 		}
 	}
 
@@ -20,20 +22,18 @@ class DbPDO
 		try {
 			return empty($numRows)?$this->_pdo->query("select * from $tablename"):$this->_pdo->query("select * from $tablename LIMIT $numRows");	
 		} catch (PDOException $e) {
-			echo $e->getMessage();
+			return $e->getMessage();
 		}	
 	}
 
-	public function find($tablename, $id)
+	public function find($tablename)
 	{
 		try {
-			$stmt = $this->_pdo->prepare("SELECT * FROM $tablename WHERE id = :id");
-			$stmt->execute(array(
-				'id' => $id
-			));
+			$this->_query = "SELECT * FROM $tablename";
+			$stmt = $this->_buildQuery();
 			return $stmt->fetch(PDO::FETCH_OBJ);
 		} catch (PDOException $e) {
-			echo $e->getMessage();
+			return $e->getMessage();
 		}
 	}
 
@@ -70,14 +70,43 @@ class DbPDO
 		}
 	}
 
-	public function query($query)
-	{
+	public function query($query) {
 		try{
-			$stmt = $this->_pdo->prepare($query);
+			$this->_query = filter_var($query, FILTER_SANITIZE_STRING);
+			$stmt = $this->_prepareQuery();
 			$stmt->execute();
-			return $stmt->fetchAll(PDO::FETCH_ASSOC);
+			return $stmt->fetchAll(PDO::FETCH_OBJ);
 		}catch(PDOException $e){
 			return $e->getMessage();
 		}
 	}
-}
+
+	public function where($data = []) {
+		if(is_array($data)){
+			$this->_where = $data;	
+			return $this;
+		} else {
+			trigger_error('Where method accepts associative array',E_USER_ERROR);
+		}
+	}
+
+	protected function _buildQuery() {
+		if( !empty($this->_where) ) {
+			$i = 1; $this->_query .= ' WHERE ';
+			foreach ($this->_where as $key => $value) {
+				$this->_query .= count($this->_where) != $i ? $key .' = ?'. ' AND ':$key .' = ? ';
+				$i++;
+			}
+			$stmt = $this->_prepareQuery();
+			$stmt->execute(array_values($this->_where));
+			return $stmt;
+		}
+	}
+
+	protected function _prepareQuery(){
+		if( !$stmt = $this->_pdo->prepare($this->_query) ) {
+			trigger_error('Problem preparing query', E_USER_ERROR);
+		}
+		return $stmt;
+	}
+} 

@@ -1,0 +1,12 @@
+.box-header {
+    color: #444;
+    display: block;
+    padding: 10px;
+    position: relative;
+}
+.box-header .box-title{
+	display: inline-block;
+    font-size: 18px;
+    margin: 0;
+    line-height: 1;
+}

@@ -8,6 +8,7 @@ $results = $pdo->get('posts');
 <head>
 	<title>Blogposts</title>
 	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+	<script src="js/angular.js"></script>
 </head>
 <body>
 	<div class="container">	
@@ -27,20 +28,24 @@ $results = $pdo->get('posts');
 				</tr>
 			</thead>
 			<tbody>
-			<?php foreach($results as $result): ?>
+			<?php while($row = $results->fetch(PDO::FETCH_OBJ)): ?>
 				<tr>
-					<td><?php echo $result['id']; ?></td>
-					<td><?php echo $result['title']; ?></td>
-					<td><?php echo $result['body']; ?></td>
-					<td><?php echo $result['created']; ?></td>
+					<td><?php echo $row->id; ?></td>
+					<td><?php echo $row->title; ?></td>
+					<td><?php echo $row->body; ?></td>
+					<td><?php echo $row->created; ?></td>
 					<td>
 						<div class="btn-group">
-							<a class="text-muted btn" href="<?php echo 'edit.php?id='.$result['id']; ?>"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a>
-							<a class="text-muted btn" href="<?php echo 'delete.php?id='.$result['id']; ?>"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+							<a class="text-muted btn" href="<?php echo 'edit.php?id='.$row->id; ?>">
+								<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+							</a>
+							<a class="text-muted btn" href="<?php echo 'delete.php?id='.$row->id; ?>">
+								<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+							</a>
 						</div>
 					</td>
 				</tr>
-			<?php endforeach; ?>
+			<?php endwhile; ?>
 			</tbody>
 		</table>
 		<a href="playground.php" class="btn btn-lg btn-block btn-success">Enter Into Playground</a>

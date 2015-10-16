@@ -5,3 +5,16 @@ php:
   - 5.4
   - 5.5
   - 5.6
+
+env:
+  - DB=mysql
+
+before_script:
+  - if [[ "$DB" == "mysql" ]]; then mysql -e "create database IF NOT EXISTS hello_world_test;" -uroot; fi
+
+# use the $DB env variable to determine the phpunit.xml to use
+script: phpunit --configuration phpunit_$DB.xml --coverage-text
+
+# configure notifications (email, IRC, campfire etc)
+notifications:
+  email: "yashsharma205@gmail.com"
